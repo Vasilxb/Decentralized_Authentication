@@ -9,12 +9,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class SessionService implements da.decentralized_authentication.Service.SessionService {
+public class SessionServiceImpl implements da.decentralized_authentication.Service.SessionService {
 
     private static final int SESSION_HOURS = 4;
     private final SessionRepository sessionRepository;
 
-    public SessionService(SessionRepository sessionRepository) {
+    public SessionServiceImpl(SessionRepository sessionRepository) {
         this.sessionRepository = sessionRepository;
     }
 

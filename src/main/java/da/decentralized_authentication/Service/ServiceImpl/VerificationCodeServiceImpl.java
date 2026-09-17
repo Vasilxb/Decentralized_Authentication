@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
-public class VerificationCodeService implements da.decentralized_authentication.Service.VerificationCodeService {
+public class VerificationCodeServiceImpl implements da.decentralized_authentication.Service.VerificationCodeService {
 
     private static final int EXPIRY_MINUTES = 10;
     private static final int MAX_ATTEMPTS = 3;
@@ -22,9 +22,9 @@ public class VerificationCodeService implements da.decentralized_authentication.
     private final PasswordUtil passwordUtil;
     private final EmailService emailService;
 
-    public VerificationCodeService(VerificationCodeRepository codeRepository,
-                                   PasswordUtil passwordUtil,
-                                   EmailService emailService) {
+    public VerificationCodeServiceImpl(VerificationCodeRepository codeRepository,
+                                       PasswordUtil passwordUtil,
+                                       EmailService emailService) {
         this.codeRepository = codeRepository;
         this.passwordUtil = passwordUtil;
         this.emailService = emailService;

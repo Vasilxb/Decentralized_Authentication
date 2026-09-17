@@ -9,11 +9,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class VerifierService implements da.decentralized_authentication.Service.VerifierService {
+public class VerifierServiceImpl implements da.decentralized_authentication.Service.VerifierService {
 
     private final VerifierRequestRepository requestRepository;
 
-    public VerifierService(VerifierRequestRepository requestRepository) {
+    public VerifierServiceImpl(VerifierRequestRepository requestRepository) {
         this.requestRepository = requestRepository;
     }
 

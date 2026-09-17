@@ -47,9 +47,13 @@ public class WalletController {
             return ResponseEntity.status(401).body("Не си најавен");
         }
 
-        String did = walletService.registerPublicKey(
-                user.get().getId(), user.get().getUsername(), request.publicKeyJwk());
-        return ResponseEntity.ok(did);
+        try {
+            String did = walletService.registerPublicKey(
+                    user.get().getId(), user.get().getUsername(), request.publicKeyJwk());
+            return ResponseEntity.ok(did);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     }
 
     public record WalletKeyRequest(String publicKeyJwk) {}

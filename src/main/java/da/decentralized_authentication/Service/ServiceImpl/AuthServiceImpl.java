@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class AuthService implements da.decentralized_authentication.Service.AuthService {
+public class AuthServiceImpl implements da.decentralized_authentication.Service.AuthService {
 
     private static final int EXPIRY_MINUTES = 10;
 
@@ -28,9 +28,9 @@ public class AuthService implements da.decentralized_authentication.Service.Auth
     private final VerificationCodeService verificationCodeService;
     private final SessionService sessionService;
 
-    public AuthService(UserRepository userRepository, VerificationCodeRepository codeRepository,
-                       PasswordUtil passwordUtil, VerificationCodeService verificationCodeService,
-                       SessionService sessionService) {
+    public AuthServiceImpl(UserRepository userRepository, VerificationCodeRepository codeRepository,
+                           PasswordUtil passwordUtil, VerificationCodeService verificationCodeService,
+                           SessionService sessionService) {
         this.userRepository = userRepository;
         this.codeRepository = codeRepository;
         this.passwordUtil = passwordUtil;

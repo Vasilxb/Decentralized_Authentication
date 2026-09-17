@@ -2,7 +2,6 @@ package da.decentralized_authentication.Service.ServiceImpl;
 
 import da.decentralized_authentication.Model.Enum.CredentialRequestStatus;
 import da.decentralized_authentication.Model.Enum.CredentialStatus;
-import da.decentralized_authentication.Service.AuthService;
 import da.decentralized_authentication.Model.*;
 import da.decentralized_authentication.Repository.CredentialRepository;
 import da.decentralized_authentication.Repository.CredentialRequestRepository;
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class CredentialService implements da.decentralized_authentication.Service.CredentialService {
+public class CredentialServiceImpl implements da.decentralized_authentication.Service.CredentialService {
 
     private final CredentialRequestRepository requestRepository;
     private final CredentialRepository credentialRepository;
@@ -22,10 +21,10 @@ public class CredentialService implements da.decentralized_authentication.Servic
     private final IssuerKeyService issuerKeyService;
 
 
-    public CredentialService(CredentialRequestRepository requestRepository,
-                             CredentialRepository credentialRepository,
-                             DidDocumentRepository didDocumentRepository,
-                             IssuerKeyService issuerKeyService) {
+    public CredentialServiceImpl(CredentialRequestRepository requestRepository,
+                                 CredentialRepository credentialRepository,
+                                 DidDocumentRepository didDocumentRepository,
+                                 IssuerKeyService issuerKeyService) {
         this.requestRepository = requestRepository;
         this.credentialRepository = credentialRepository;
         this.didDocumentRepository = didDocumentRepository;
@@ -93,6 +92,18 @@ public class CredentialService implements da.decentralized_authentication.Servic
             c.setRevokeReason(reason);
             credentialRepository.save(c);
         });
+    }
+
+    @Override
+    public void revokeAllForHolder(Long holderId, String reason) {
+        for (Credential c : credentialRepository.findByHolderId(holderId)) {
+            if (c.getStatus() == CredentialStatus.ACTIVE) {
+                c.setStatus(CredentialStatus.REVOKED);
+                c.setRevokedAt(LocalDateTime.now());
+                c.setRevokeReason(reason);
+                credentialRepository.save(c);
+            }
+        }
     }
 
     @Override

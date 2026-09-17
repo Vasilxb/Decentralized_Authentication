@@ -13,6 +13,7 @@ public interface CredentialService {
     void denyRequest(Long requestId, Long adminId);
     List<Credential> getCredentialsForHolder(Long holderId);
     void revokeCredential(Long credentialId, String reason);
+    void revokeAllForHolder(Long holderId, String reason); // НОВО
     void deleteCredential(Long credentialId);
     boolean verifyCredential(Long credentialId) throws Exception;
 }
