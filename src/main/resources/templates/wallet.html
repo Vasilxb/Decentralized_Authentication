@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Digital Wallet</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+        .identity-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #fafafa;
+        }
+        .identity-card h2 { margin-top: 0; }
+        .field { margin: 10px 0; }
+        .field-label { font-size: 0.85em; color: #666; text-transform: uppercase; }
+        .field-value { font-family: monospace; word-break: break-all; }
+        .status-registered { color: green; font-weight: bold; }
+        .status-unregistered { color: #999; font-weight: bold; }
+        details { margin-top: 15px; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; font-size: 0.85em; }
+        button { margin: 5px 5px 5px 0; padding: 8px 14px; }
+    </style>
+</head>
+<body>
+<h1>Твојот Digital Wallet</h1>
+<p>Корисник: <strong th:text="${username}"></strong> | <a href="/profile">Профил</a> | <a href="/logout">Одјави се</a></p>
+
+<div id="status" style="margin: 12px 0; font-weight: bold;"></div>
+
+<div class="identity-card">
+    <h2>🔐 Digital Identity</h2>
+
+    <div class="field">
+        <div class="field-label">DID</div>
+        <div class="field-value" id="didValue">Не е регистриран</div>
+    </div>
+
+    <div class="field">
+        <div class="field-label">Public key</div>
+        <div class="field-value" id="algoValue">Нема генериран клуч</div>
+    </div>
+
+    <div class="field">
+        <div class="field-label">Статус</div>
+        <div class="field-value" id="statusValue"><span class="status-unregistered">✗ Нерегистриран</span></div>
+    </div>
+
+    <button id="generateBtn">Генерирај идентитет</button>
+    <button id="downloadBtn" disabled>Преземи backup</button>
+    <button id="registerBtn" disabled>Регистрирај кај серверот</button>
+
+    <details>
+        <summary>Прикажи детали за public key (JWK)</summary>
+        <pre id="publicKeyDisplay">Нема генериран клуч</pre>
+    </details>
+</div>
+
+<script>
+    const STORAGE_PUBLIC = 'wallet_public_jwk';
+    const STORAGE_PRIVATE = 'wallet_private_jwk';
+    const existingDid = /*[[${existingDid}]]*/ null;
+
+    async function generateKeyPair() {
+        const keyPair = await window.crypto.subtle.generateKey(
+            { name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]
+        );
+        const publicJwk = await window.crypto.subtle.exportKey("jwk", keyPair.publicKey);
+        const privateJwk = await window.crypto.subtle.exportKey("jwk", keyPair.privateKey);
+        localStorage.setItem(STORAGE_PUBLIC, JSON.stringify(publicJwk));
+        localStorage.setItem(STORAGE_PRIVATE, JSON.stringify(privateJwk));
+        return { publicJwk, privateJwk };
+    }
+
+    function loadStoredKeys() {
+        const pub = localStorage.getItem(STORAGE_PUBLIC);
+        const priv = localStorage.getItem(STORAGE_PRIVATE);
+        return (pub && priv) ? { publicJwk: JSON.parse(pub), privateJwk: JSON.parse(priv) } : null;
+    }
+
+    function updateCard(publicJwk, registered) {
+        document.getElementById('algoValue').textContent =
+            publicJwk ? `${publicJwk.kty} ${publicJwk.crv}` : 'Нема генериран клуч';
+        document.getElementById('publicKeyDisplay').textContent =
+            publicJwk ? JSON.stringify(publicJwk, null, 2) : 'Нема генериран клуч';
+        document.getElementById('statusValue').innerHTML = registered
+            ? '<span class="status-registered">✓ Registered</span>'
+            : '<span class="status-unregistered">✗ Нерегистриран</span>';
+        document.getElementById('didValue').textContent = existingDid || 'Не е регистриран';
+        document.getElementById('downloadBtn').disabled = !publicJwk;
+        document.getElementById('registerBtn').disabled = !publicJwk || registered;
+    }
+
+    function setStatus(message, isError) {
+        const el = document.getElementById('status');
+        el.textContent = message;
+        el.style.color = isError ? 'red' : 'green';
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+        try {
+            const { publicJwk } = await generateKeyPair();
+            updateCard(publicJwk, false);
+            setStatus('Нов идентитет генериран и зачуван локално.', false);
+        } catch (e) {
+            setStatus('Грешка при генерирање: ' + e.message, true);
+        }
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        const priv = localStorage.getItem(STORAGE_PRIVATE);
+        if (!priv) return;
+        const blob = new Blob([priv], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'wallet-private-key.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+        const pub = localStorage.getItem(STORAGE_PUBLIC);
+        if (!pub) return;
+        try {
+            const response = await fetch('/wallet/register-key', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ publicKeyJwk: pub })
+            });
+            const text = await response.text();
+            if (response.ok) {
+                setStatus('Успешно регистрирано.', false);
+                updateCard(JSON.parse(pub), true);
+            } else {
+                setStatus('Грешка при регистрација: ' + text, true);
+            }
+        } catch (e) {
+            setStatus('Мрежна грешка: ' + e.message, true);
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const existing = loadStoredKeys();
+        if (existing) {
+            updateCard(existing.publicJwk, !!existingDid);
+            setStatus('Постоечки идентитет вчитан од овој browser.', false);
+        }
+    });
+</script>
+</body>
+</html>

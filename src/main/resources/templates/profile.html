@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Профил</title></head>
+<body>
+<h1>Твојот профил</h1>
+<p>Корисник: <strong th:text="${user.username}"></strong> | <a href="/logout">Одјави се</a></p>
+<p th:if="${successMessage}" th:text="${successMessage}" style="color:green"></p>
+<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red"></p>
+
+<h2>Твоите credentials</h2>
+<table border="1" cellpadding="6">
+    <tr><th>Тип</th><th>Статус</th><th>Издаден</th><th>Акции</th></tr>
+    <tr th:each="c : ${credentials}">
+        <td th:text="${c.type}"></td>
+        <td th:text="${c.status}"></td>
+        <td th:text="${c.issuedAt}"></td>
+        <td>
+            <form method="post" action="/profile/delete-credential" style="display:inline">
+                <input type="hidden" name="credentialId" th:value="${c.id}"/>
+                <button type="submit">Избриши</button>
+            </form>
+            <form method="post" action="/profile/update-credential" style="display:inline">
+                <input type="hidden" name="credentialId" th:value="${c.id}"/>
+                <input type="text" name="type" th:value="${c.type}" size="10"/>
+                <button type="submit">Ажурирај</button>
+            </form>
+        </td>
+    </tr>
+</table>
+
+<h2>Барај нов credential</h2>
+<form method="post" action="/profile/request-credential">
+    <input type="text" name="type" placeholder="Тип на credential" required/>
+    <input type="text" name="proofDocumentPath" placeholder="Патека до документ (опционално)"/>
+    <button type="submit">Поднеси барање</button>
+</form>
+
+<h2>Твоите барања</h2>
+<table border="1" cellpadding="6">
+    <tr><th>Тип</th><th>Статус</th><th>Поднесено</th></tr>
+    <tr th:each="r : ${requests}">
+        <td th:text="${r.requestedType}"></td>
+        <td th:text="${r.status}"></td>
+        <td th:text="${r.requestedAt}"></td>
+    </tr>
+</table>
+
+<h2>Public key / DID</h2>
+<form method="post" action="/profile/update-key">
+    <textarea name="publicKey" placeholder="Твојот public key" th:text="${user.publicKey}"></textarea>
+    <button type="submit">Зачувај</button>
+</form>
+</body>
+</html>

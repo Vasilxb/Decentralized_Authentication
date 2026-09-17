@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Потврди најава</title>
+</head>
+<body>
+<h1>Потврди го твојот идентитет</h1>
+<p>Испративме код за <strong th:text="${username}"></strong> (провери ја конзолата на серверот).</p>
+<p th:if="${error}" th:text="${error}" style="color:red"></p>
+
+<form method="post" action="/login/verify">
+    <input type="hidden" name="username" th:value="${username}"/>
+    <input type="text" name="code" placeholder="6-цифрен код" maxlength="6" required/>
+    <button type="submit">Потврди</button>
+</form>
+</body>
+</html>
