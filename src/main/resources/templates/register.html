@@ -1,23 +1,48 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
 <head>
     <meta charset="UTF-8"/>
-    <title>Регистрација</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Регистрација · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/>
 </head>
-<body>
-<h1>Регистрација</h1>
-<p th:if="${error}" th:text="${error}" style="color:red"></p>
+<body class="auth-page">
+<main class="auth-shell wide">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <h1>Регистрација</h1>
+    <p class="subtitle">Создади сметка за да добиеш свој дигитален идентитет.</p>
 
-<form method="post" action="/register">
-    <input type="text" name="username" placeholder="Корисничко име" required/>
-    <input type="text" name="fullName" placeholder="Целосно име" required/>
-    <input type="date" name="dob" required/>
-    <input type="text" name="address" placeholder="Адреса на живеење" required/>
-    <input type="email" name="email" placeholder="Email" required/>
-    <input type="password" name="password" placeholder="Лозинка" required/>
-    <button type="submit">Регистрирај се</button>
-</form>
+    <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
 
-<p>Веќе имаш сметка? <a href="/login">Најави се</a></p>
+    <form method="post" action="/register" class="stack">
+        <label class="field">
+            <span class="field-label">Корисничко име</span>
+            <input type="text" name="username" placeholder="на пр. marija.k" required/>
+        </label>
+        <label class="field">
+            <span class="field-label">Целосно име</span>
+            <input type="text" name="fullName" placeholder="Марија Костова" required/>
+        </label>
+        <label class="field">
+            <span class="field-label">Датум на раѓање</span>
+            <input type="date" name="dob" required/>
+        </label>
+        <label class="field">
+            <span class="field-label">Адреса на живеење</span>
+            <input type="text" name="address" placeholder="ул. Партизанска 12, Скопје" required/>
+        </label>
+        <label class="field">
+            <span class="field-label">Email</span>
+            <input type="email" name="email" placeholder="marija@example.com" required/>
+        </label>
+        <label class="field">
+            <span class="field-label">Лозинка</span>
+            <input type="password" name="password" placeholder="••••••••" required/>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Регистрирај се</button>
+    </form>
+
+    <p class="foot-note">Веќе имаш сметка? <a href="/login">Најави се</a></p>
+</main>
 </body>
 </html>

@@ -6,6 +6,7 @@ import da.decentralized_authentication.Model.*;
 import da.decentralized_authentication.Repository.CredentialRepository;
 import da.decentralized_authentication.Repository.CredentialRequestRepository;
 import da.decentralized_authentication.Repository.DidDocumentRepository;
+import da.decentralized_authentication.Service.CredentialService;
 import da.decentralized_authentication.Util.IssuerKeyService;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +14,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class CredentialServiceImpl implements da.decentralized_authentication.Service.CredentialService {
+public class CredentialServiceImpl implements CredentialService {
 
     private final CredentialRequestRepository requestRepository;
     private final CredentialRepository credentialRepository;
     private final DidDocumentRepository didDocumentRepository;
     private final IssuerKeyService issuerKeyService;
-
 
     public CredentialServiceImpl(CredentialRequestRepository requestRepository,
                                  CredentialRepository credentialRepository,
@@ -50,8 +50,10 @@ public class CredentialServiceImpl implements da.decentralized_authentication.Se
     public void approveRequest(Long requestId, Long adminId) throws Exception {
         CredentialRequest req = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Барањето не постои"));
+        if (req.getStatus() != CredentialRequestStatus.PENDING) {
+            throw new IllegalStateException("Барањето веќе е обработено");
+        }
 
-        // НОВО: барам DidDocument наместо да читам User.getPublicKey()
         DidDocument didDoc = didDocumentRepository.findByHolderId(req.getHolderId())
                 .orElseThrow(() -> new IllegalStateException(
                         "Holder нема регистриран DID/wallet клуч. Credential не може да се издаде."));
@@ -64,7 +66,6 @@ public class CredentialServiceImpl implements da.decentralized_authentication.Se
         String publicKeySnapshot = didDoc.getPublicKeyJwk();
         String dataToSign = req.getHolderId() + "|" + req.getRequestedType() + "|" + publicKeySnapshot;
         String signature = issuerKeyService.sign(dataToSign);
-
         credentialRepository.save(new Credential(req.getHolderId(), req.getRequestedType(),
                 signature, publicKeySnapshot));
     }
@@ -72,6 +73,9 @@ public class CredentialServiceImpl implements da.decentralized_authentication.Se
     @Override
     public void denyRequest(Long requestId, Long adminId) {
         requestRepository.findById(requestId).ifPresent(req -> {
+            if (req.getStatus() != CredentialRequestStatus.PENDING) {
+                return;
+            }
             req.setStatus(CredentialRequestStatus.DENIED);
             req.setReviewedAt(LocalDateTime.now());
             req.setReviewedByAdminId(adminId);
@@ -116,7 +120,6 @@ public class CredentialServiceImpl implements da.decentralized_authentication.Se
         Credential c = credentialRepository.findById(credentialId)
                 .orElseThrow(() -> new IllegalArgumentException("Credential не постои"));
         if (c.getStatus() == CredentialStatus.REVOKED) return false;
-
         String dataToVerify = c.getHolderId() + "|" + c.getType() + "|" + c.getHolderPublicKeySnapshot();
         return issuerKeyService.verify(dataToVerify, c.getIssuerSignature());
     }

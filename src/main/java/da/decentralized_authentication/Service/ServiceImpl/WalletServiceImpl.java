@@ -4,11 +4,12 @@ import da.decentralized_authentication.Model.DidDocument;
 import da.decentralized_authentication.Repository.DidDocumentRepository;
 import da.decentralized_authentication.Repository.UserRepository;
 import da.decentralized_authentication.Service.CredentialService;
+import da.decentralized_authentication.Service.WalletService;
 import da.decentralized_authentication.Util.JwkValidator;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WalletServiceImpl implements da.decentralized_authentication.Service.WalletService {
+public class WalletServiceImpl implements WalletService {
 
     private final DidDocumentRepository didDocumentRepository;
     private final UserRepository userRepository;

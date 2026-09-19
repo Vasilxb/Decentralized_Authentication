@@ -1,12 +1,34 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
 <head>
     <meta charset="UTF-8"/>
-    <title>Почетна</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Почетна · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
-<h1>Добредојде!</h1>
-<p>Успешно си најавен.</p>
-<a href="/logout">Одјави се</a>
+<header class="topbar">
+    <a class="brand" href="/home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Decentralized Auth</span>
+    </a>
+    <nav class="topnav">
+        <a href="/profile">Профил</a>
+        <a href="/wallet">Wallet</a>
+        <a href="/requestAccess">Барања</a>
+        <a href="/logout" class="topnav-logout">Одјави се</a>
+    </nav>
+</header>
+
+<main class="page">
+    <div class="panel">
+        <h1>Добредојде!</h1>
+        <p>Успешно си најавен. Од тука можеш да го управуваш твојот дигитален идентитет — регистрирај го твојот wallet клуч, барај credentials, или прегледувај барања за пристап.</p>
+        <div class="actions-row">
+            <a href="/wallet" class="btn btn-primary">Оди во Wallet</a>
+            <a href="/profile" class="btn btn-secondary">Оди во Профил</a>
+        </div>
+    </div>
+</main>
 </body>
 </html>

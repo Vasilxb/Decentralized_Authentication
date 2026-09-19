@@ -2,6 +2,7 @@ package da.decentralized_authentication.Service.ServiceImpl;
 
 import da.decentralized_authentication.Model.Session;
 import da.decentralized_authentication.Repository.SessionRepository;
+import da.decentralized_authentication.Service.SessionService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class SessionServiceImpl implements da.decentralized_authentication.Service.SessionService {
+public class SessionServiceImpl implements SessionService {
 
     private static final int SESSION_HOURS = 4;
     private final SessionRepository sessionRepository;

@@ -1,29 +1,58 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/><title>Admin — Корисници</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Admin — Корисници · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
 <body>
-<h1>Сите корисници</h1>
-<p><a href="/admin/requests">Назад кон барања</a> | <a href="/logout">Одјави се</a></p>
-<p th:if="${successMessage}" th:text="${successMessage}" style="color:green"></p>
+<header class="topbar">
+    <a class="brand" href="/admin/requests">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Decentralized Auth · Admin</span>
+    </a>
+    <nav class="topnav">
+        <a href="/admin/requests">Барања</a>
+        <a href="/logout" class="topnav-logout">Одјави се</a>
+    </nav>
+</header>
 
-<table border="1" cellpadding="6">
-    <tr><th>Username</th><th>Email</th><th>Улога</th><th>Enabled</th><th>Акции</th></tr>
-    <tr th:each="u : ${users}">
-        <td th:text="${u.username}"></td>
-        <td th:text="${u.email}"></td>
-        <td th:text="${u.role}"></td>
-        <td th:text="${u.enabled}"></td>
-        <td>
-            <form method="post" action="/admin/users/suspend" style="display:inline">
-                <input type="hidden" name="username" th:value="${u.username}"/>
-                <button type="submit">Суспендирај</button>
-            </form>
-            <form method="post" action="/admin/users/enable" style="display:inline">
-                <input type="hidden" name="username" th:value="${u.username}"/>
-                <button type="submit">Активирај</button>
-            </form>
-        </td>
-    </tr>
-</table>
+<main class="page">
+    <h1>Сите корисници</h1>
+    <p class="subtitle">Суспендирај или активирај сметки.</p>
+
+    <p th:if="${successMessage}" th:text="${successMessage}" class="alert alert-success"></p>
+
+    <section class="panel">
+        <table class="ledger">
+            <tr><th>Username</th><th>Email</th><th>Улога</th><th>Статус</th><th>Акции</th></tr>
+            <tr th:if="${#lists.isEmpty(users)}" class="empty-row">
+                <td colspan="5">Нема корисници.</td>
+            </tr>
+            <tr th:each="u : ${users}">
+                <td th:text="${u.username}"></td>
+                <td class="mono" th:text="${u.email}"></td>
+                <td th:text="${u.role}"></td>
+                <td>
+          <span class="pill" th:classappend="${u.enabled} ? 'pill-active' : 'pill-revoked'"
+                th:text="${u.enabled} ? 'Активен' : 'Суспендиран'"></span>
+                </td>
+                <td>
+                    <div class="actions-row">
+                        <form method="post" action="/admin/users/suspend" style="display:inline">
+                            <input type="hidden" name="username" th:value="${u.username}"/>
+                            <button type="submit" class="btn btn-danger btn-small">Суспендирај</button>
+                        </form>
+                        <form method="post" action="/admin/users/enable" style="display:inline">
+                            <input type="hidden" name="username" th:value="${u.username}"/>
+                            <button type="submit" class="btn btn-secondary btn-small">Активирај</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </section>
+</main>
 </body>
 </html>

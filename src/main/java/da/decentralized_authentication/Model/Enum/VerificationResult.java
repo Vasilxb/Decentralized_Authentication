@@ -5,5 +5,7 @@ public enum VerificationResult {
     WRONG_CODE,
     EXPIRED,
     LOCKED,
-    NOT_FOUND
+    NOT_FOUND,
+    USERNAME_TAKEN,
+    EMAIL_TAKEN
 }

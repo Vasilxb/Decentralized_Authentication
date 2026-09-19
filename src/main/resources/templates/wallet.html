@@ -1,61 +1,59 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
 <head>
     <meta charset="UTF-8"/>
-    <title>Digital Wallet</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
-        .identity-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            background: #fafafa;
-        }
-        .identity-card h2 { margin-top: 0; }
-        .field { margin: 10px 0; }
-        .field-label { font-size: 0.85em; color: #666; text-transform: uppercase; }
-        .field-value { font-family: monospace; word-break: break-all; }
-        .status-registered { color: green; font-weight: bold; }
-        .status-unregistered { color: #999; font-weight: bold; }
-        details { margin-top: 15px; }
-        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; font-size: 0.85em; }
-        button { margin: 5px 5px 5px 0; padding: 8px 14px; }
-    </style>
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Digital Wallet · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/></head>
 <body>
-<h1>Твојот Digital Wallet</h1>
-<p>Корисник: <strong th:text="${username}"></strong> | <a href="/profile">Профил</a> | <a href="/logout">Одјави се</a></p>
+<header class="topbar">
+    <a class="brand" href="/home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Decentralized Auth</span>
+    </a>
+    <nav class="topnav">
+        <a href="/profile">Профил</a>
+        <a href="/requestAccess">Барања</a>
+        <a href="/logout" class="topnav-logout">Одјави се</a>
+    </nav>
+</header>
 
-<div id="status" style="margin: 12px 0; font-weight: bold;"></div>
+<main class="page" style="max-width: 620px;">
+    <h1>Твојот Digital Wallet</h1>
+    <p class="subtitle">Најавен како <strong th:text="${username}" style="color: var(--text);"></strong></p>
 
-<div class="identity-card">
-    <h2>🔐 Digital Identity</h2>
+    <div id="status" class="alert alert-success" style="display:none;"></div>
 
-    <div class="field">
-        <div class="field-label">DID</div>
-        <div class="field-value" id="didValue">Не е регистриран</div>
+    <div class="identity-card">
+        <h2>Дигитален идентитет</h2>
+
+        <div class="field-row">
+            <span class="field-label">DID</span>
+            <span class="field-value" id="didValue">Не е регистриран</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">Public key</span>
+            <span class="field-value" id="algoValue">Нема генериран клуч</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">Статус</span>
+            <span class="field-value">
+        <span id="statusValue" class="status-dot is-unregistered">Нерегистриран</span>
+      </span>
+        </div>
+
+        <div class="actions-row" style="margin-top: 18px;">
+            <button id="generateBtn" class="btn btn-primary">Генерирај идентитет</button>
+            <button id="downloadBtn" class="btn btn-secondary" disabled>Преземи backup</button>
+            <button id="registerBtn" class="btn btn-secondary" disabled>Регистрирај кај серверот</button>
+        </div>
+
+        <details>
+            <summary>Прикажи детали за public key (JWK)</summary>
+            <pre id="publicKeyDisplay">Нема генериран клуч</pre>
+        </details>
     </div>
-
-    <div class="field">
-        <div class="field-label">Public key</div>
-        <div class="field-value" id="algoValue">Нема генериран клуч</div>
-    </div>
-
-    <div class="field">
-        <div class="field-label">Статус</div>
-        <div class="field-value" id="statusValue"><span class="status-unregistered">✗ Нерегистриран</span></div>
-    </div>
-
-    <button id="generateBtn">Генерирај идентитет</button>
-    <button id="downloadBtn" disabled>Преземи backup</button>
-    <button id="registerBtn" disabled>Регистрирај кај серверот</button>
-
-    <details>
-        <summary>Прикажи детали за public key (JWK)</summary>
-        <pre id="publicKeyDisplay">Нема генериран клуч</pre>
-    </details>
-</div>
+</main>
 
 <script th:inline="javascript">
     const STORAGE_PUBLIC = 'wallet_public_jwk';
@@ -84,9 +82,12 @@
             publicJwk ? `${publicJwk.kty} ${publicJwk.crv}` : 'Нема генериран клуч';
         document.getElementById('publicKeyDisplay').textContent =
             publicJwk ? JSON.stringify(publicJwk, null, 2) : 'Нема генериран клуч';
-        document.getElementById('statusValue').innerHTML = registered
-            ? '<span class="status-registered">✓ Registered</span>'
-            : '<span class="status-unregistered">✗ Нерегистриран</span>';
+
+        const statusEl = document.getElementById('statusValue');
+        statusEl.textContent = registered ? 'Registered' : 'Нерегистриран';
+        statusEl.classList.toggle('is-registered', registered);
+        statusEl.classList.toggle('is-unregistered', !registered);
+
         document.getElementById('didValue').textContent = existingDid || 'Не е регистриран';
         document.getElementById('downloadBtn').disabled = !publicJwk;
         document.getElementById('registerBtn').disabled = !publicJwk || registered;
@@ -95,7 +96,8 @@
     function setStatus(message, isError) {
         const el = document.getElementById('status');
         el.textContent = message;
-        el.style.color = isError ? 'red' : 'green';
+        el.style.display = message ? 'block' : 'none';
+        el.className = isError ? 'alert alert-error' : 'alert alert-success';
     }
 
     document.getElementById('generateBtn').addEventListener('click', async () => {

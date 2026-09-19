@@ -1,19 +1,32 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
 <head>
     <meta charset="UTF-8"/>
-    <title>Најава</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Најава · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/>
 </head>
-<body>
-<h1>Најава</h1>
-<p th:if="${error}" th:text="${error}" style="color:red"></p>
+<body class="auth-page">
+<main class="auth-shell">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <h1>Најава</h1>
+    <p class="subtitle">Внеси ги твоите податоци за да продолжиш.</p>
 
-<form method="post" action="/login">
-    <input type="text" name="username" placeholder="Корисничко име" required/>
-    <input type="password" name="password" placeholder="Лозинка" required/>
-    <button type="submit">Најави се</button>
-</form>
+    <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
 
-<p>Немаш сметка? <a href="/register">Регистрирај се</a></p>
+    <form method="post" action="/login" class="stack">
+        <label class="field">
+            <span class="field-label">Корисничко име</span>
+            <input type="text" name="username" placeholder="на пр. marija.k" required/>
+        </label>
+        <label class="field">
+            <span class="field-label">Лозинка</span>
+            <input type="password" name="password" placeholder="••••••••" required/>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Најави се</button>
+    </form>
+
+    <p class="foot-note">Немаш сметка? <a href="/register">Регистрирај се</a></p>
+</main>
 </body>
 </html>

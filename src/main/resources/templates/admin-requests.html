@@ -1,29 +1,55 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/><title>Admin — Барања</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Admin — Барања · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/></head>
 <body>
-<h1>Pending credential барања</h1>
-<p><a href="/admin/users">Управувај со корисници</a> | <a href="/logout">Одјави се</a></p>
-<p th:if="${successMessage}" th:text="${successMessage}" style="color:green"></p>
-<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red"></p>
-<table border="1" cellpadding="6">
-    <tr><th>Holder ID</th><th>Тип</th><th>Документ</th><th>Поднесено</th><th>Акции</th></tr>
-    <tr th:each="r : ${requests}">
-        <td th:text="${r.holderId}"></td>
-        <td th:text="${r.requestedType}"></td>
-        <td th:text="${r.proofDocumentPath}"></td>
-        <td th:text="${r.requestedAt}"></td>
-        <td>
-            <form method="post" action="/admin/requests/approve" style="display:inline">
-                <input type="hidden" name="requestId" th:value="${r.id}"/>
-                <button type="submit">Одобри</button>
-            </form>
-            <form method="post" action="/admin/requests/deny" style="display:inline">
-                <input type="hidden" name="requestId" th:value="${r.id}"/>
-                <button type="submit">Одбиј</button>
-            </form>
-        </td>
-    </tr>
-</table>
+<header class="topbar">
+    <a class="brand" href="/admin/requests">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Decentralized Auth · Admin</span>
+    </a>
+    <nav class="topnav">
+        <a href="/admin/users">Корисници</a>
+        <a href="/logout" class="topnav-logout">Одјави се</a>
+    </nav>
+</header>
+
+<main class="page">
+    <h1>Pending credential барања</h1>
+    <p class="subtitle">Прегледај и одлучи по секое барање за издавање credential.</p>
+
+    <p th:if="${successMessage}" th:text="${successMessage}" class="alert alert-success"></p>
+    <p th:if="${errorMessage}" th:text="${errorMessage}" class="alert alert-error"></p>
+
+    <section class="panel">
+        <table class="ledger">
+            <tr><th>Holder ID</th><th>Тип</th><th>Документ</th><th>Поднесено</th><th>Акции</th></tr>
+            <tr th:if="${#lists.isEmpty(requests)}" class="empty-row">
+                <td colspan="5">Нема нерешени барања.</td>
+            </tr>
+            <tr th:each="r : ${requests}">
+                <td class="mono" th:text="${r.holderId}"></td>
+                <td th:text="${r.requestedType}"></td>
+                <td class="mono" th:text="${r.proofDocumentPath}"></td>
+                <td class="mono" th:text="${r.requestedAt}"></td>
+                <td>
+                    <div class="actions-row">
+                        <form method="post" action="/admin/requests/approve" style="display:inline">
+                            <input type="hidden" name="requestId" th:value="${r.id}"/>
+                            <button type="submit" class="btn btn-primary btn-small">Одобри</button>
+                        </form>
+                        <form method="post" action="/admin/requests/deny" style="display:inline">
+                            <input type="hidden" name="requestId" th:value="${r.id}"/>
+                            <button type="submit" class="btn btn-danger btn-small">Одбиј</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </section>
+</main>
 </body>
 </html>

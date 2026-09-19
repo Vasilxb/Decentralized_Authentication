@@ -1,8 +1,8 @@
 package da.decentralized_authentication.Web;
 
+import da.decentralized_authentication.Model.Enum.VerificationResult;
 import da.decentralized_authentication.Service.AuthService;
 import da.decentralized_authentication.Service.SessionService;
-import da.decentralized_authentication.Model.Enum.VerificationResult;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,12 +15,21 @@ import java.time.LocalDate;
 @Controller
 public class AuthController {
 
+    // Kept in sync with SessionServiceImpl.SESSION_HOURS so the cookie never
+    // outlives or dies well before the server-side session.
+    private static final int SESSION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 4;
+
     private final AuthService authService;
     private final SessionService sessionService;
 
     public AuthController(AuthService authService, SessionService sessionService) {
         this.authService = authService;
         this.sessionService = sessionService;
+    }
+
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/login";
     }
 
     @GetMapping("/register")
@@ -54,9 +63,11 @@ public class AuthController {
         VerificationResult result = authService.completeRegistration(email, code);
         return switch (result) {
             case SUCCESS -> "redirect:/login";
-            case EXPIRED -> withError(model, email, "Кодот истечен, регистрирај се повторно");
-            case LOCKED -> withError(model, email, "Премногу обиди, регистрирај се повторно");
-            default -> withError(model, email, "Погрешен код");
+            case EXPIRED -> withError(model, email, "Кодот истече, регистрирај се повторно");
+            case LOCKED -> withError(model, email, "Премногу неуспешни обиди, регистрирај се повторно");
+            case USERNAME_TAKEN -> withError(model, email, "Корисничкото име веќе постои");
+            case EMAIL_TAKEN -> withError(model, email, "Email адресата веќе постои");
+            default -> withError(model, email, "Погрешен или непостоечки код");
         };
     }
 
@@ -88,17 +99,27 @@ public class AuthController {
     }
 
     @PostMapping("/login/verify")
-    public String verifyLogin(@RequestParam String username, @RequestParam String code,
-                              Model model, HttpServletResponse response) {
+    public String verifyLogin(
+            @RequestParam String username,
+            @RequestParam String code,
+            Model model,
+            HttpServletResponse response
+    ) {
         String token = authService.completeLogin(username, code);
         if (token == null) {
             model.addAttribute("username", username);
-            model.addAttribute("error", "Погрешен или истечен код");
+            model.addAttribute(
+                    "error",
+                    "Погрешен, истечен или непостоечки код"
+            );
             return "login-verify";
         }
         Cookie cookie = new Cookie("session", token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
+        cookie.setMaxAge(SESSION_COOKIE_MAX_AGE_SECONDS);
+        cookie.setSecure(true);
+        cookie.setAttribute("SameSite", "Strict");
         response.addCookie(cookie);
         return "redirect:/home";
     }
@@ -116,9 +137,10 @@ public class AuthController {
                          HttpServletResponse response) {
         if (token != null) {
             sessionService.invalidate(token);
-            Cookie cookie = new Cookie("session", null);
-            cookie.setMaxAge(0);
+            Cookie cookie = new Cookie("session", "");
+            cookie.setHttpOnly(true);
             cookie.setPath("/");
+            cookie.setMaxAge(0);
             response.addCookie(cookie);
         }
         return "redirect:/login";

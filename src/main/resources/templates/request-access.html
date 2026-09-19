@@ -1,34 +1,64 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/><title>Барања за пристап</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Барања за пристап · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/></head>
 <body>
-<h1>Барања од Verifier-и</h1>
-<p><a href="/profile">Назад кон профил</a> | <a href="/logout">Одјави се</a></p>
-<p th:if="${successMessage}" th:text="${successMessage}" style="color:green"></p>
+<header class="topbar">
+    <a class="brand" href="/home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Decentralized Auth</span>
+    </a>
+    <nav class="topnav">
+        <a href="/profile">Профил</a>
+        <a href="/wallet">Wallet</a>
+        <a href="/logout" class="topnav-logout">Одјави се</a>
+    </nav>
+</header>
 
-<table border="1" cellpadding="6">
-    <tr><th>Verifier</th><th>Бара тип</th><th>Статус</th><th>Поднесено</th><th>Акции</th></tr>
-    <tr th:each="r : ${requests}">
-        <td th:text="${r.verifierName}"></td>
-        <td th:text="${r.requestedCredentialType}"></td>
-        <td th:text="${r.status}"></td>
-        <td th:text="${r.requestedAt}"></td>
-        <td th:if="${r.status.name() == 'PENDING'}">
-            <form method="post" action="/requestAccess/approve" style="display:inline">
-                <input type="hidden" name="requestId" th:value="${r.id}"/>
-                <select name="credentialId" required>
-                    <option th:each="c : ${credentials}"
-                            th:value="${c.id}"
-                            th:text="${c.type} + ' (#' + ${c.id} + ')'"></option>
-                </select>
-                <button type="submit">Одобри</button>
-            </form>
-            <form method="post" action="/requestAccess/deny" style="display:inline">
-                <input type="hidden" name="requestId" th:value="${r.id}"/>
-                <button type="submit">Одбиј</button>
-            </form>
-        </td>
-    </tr>
-</table>
+<main class="page">
+    <h1>Барања од Verifier-и</h1>
+    <p class="subtitle">Одобри или одбиј барања за пристап до твоите credentials.</p>
+
+    <p th:if="${successMessage}" th:text="${successMessage}" class="alert alert-success"></p>
+
+    <section class="panel">
+        <table class="ledger">
+            <tr><th>Verifier</th><th>Бара тип</th><th>Статус</th><th>Поднесено</th><th>Акции</th></tr>
+            <tr th:if="${#lists.isEmpty(requests)}" class="empty-row">
+                <td colspan="5">Нема барања за пристап.</td>
+            </tr>
+            <tr th:each="r : ${requests}">
+                <td th:text="${r.verifierName}"></td>
+                <td th:text="${r.requestedCredentialType}"></td>
+                <td>
+          <span class="pill"
+                th:classappend="${r.status.name() == 'APPROVED'} ? 'pill-active' : (${r.status.name() == 'DENIED'} ? 'pill-revoked' : 'pill-pending')"
+                th:text="${r.status}"></span>
+                </td>
+                <td class="mono" th:text="${r.requestedAt}"></td>
+                <td th:if="${r.status.name() == 'PENDING'}">
+                    <div class="actions-row">
+                        <form method="post" action="/requestAccess/approve" style="display:inline" class="actions-row">
+                            <input type="hidden" name="requestId" th:value="${r.id}"/>
+                            <select name="credentialId" required>
+                                <option th:each="c : ${credentials}"
+                                        th:value="${c.id}"
+                                        th:text="${c.type} + ' (#' + ${c.id} + ')'"></option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-small">Одобри</button>
+                        </form>
+                        <form method="post" action="/requestAccess/deny" style="display:inline">
+                            <input type="hidden" name="requestId" th:value="${r.id}"/>
+                            <button type="submit" class="btn btn-danger btn-small">Одбиј</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </section>
+</main>
 </body>
 </html>

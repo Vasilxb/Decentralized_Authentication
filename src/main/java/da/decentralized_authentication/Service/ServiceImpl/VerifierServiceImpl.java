@@ -3,13 +3,14 @@ package da.decentralized_authentication.Service.ServiceImpl;
 import da.decentralized_authentication.Model.Enum.VerifierRequestStatus;
 import da.decentralized_authentication.Model.VerifierRequest;
 import da.decentralized_authentication.Repository.VerifierRequestRepository;
+import da.decentralized_authentication.Service.VerifierService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class VerifierServiceImpl implements da.decentralized_authentication.Service.VerifierService {
+public class VerifierServiceImpl implements VerifierService {
 
     private final VerifierRequestRepository requestRepository;
 
@@ -30,8 +31,11 @@ public class VerifierServiceImpl implements da.decentralized_authentication.Serv
     @Override
     public void approve(Long requestId, Long credentialId) {
         requestRepository.findById(requestId).ifPresent(r -> {
+            if (r.getStatus() != VerifierRequestStatus.PENDING) {
+                return;
+            }
             r.setStatus(VerifierRequestStatus.APPROVED);
-            r.setCredentialId(credentialId);  // ново поле - најди во VerifierRequest.java
+            r.setCredentialId(credentialId);
             r.setRespondedAt(LocalDateTime.now());
             requestRepository.save(r);
         });
@@ -40,6 +44,9 @@ public class VerifierServiceImpl implements da.decentralized_authentication.Serv
     @Override
     public void deny(Long requestId) {
         requestRepository.findById(requestId).ifPresent(r -> {
+            if (r.getStatus() != VerifierRequestStatus.PENDING) {
+                return;
+            }
             r.setStatus(VerifierRequestStatus.DENIED);
             r.setRespondedAt(LocalDateTime.now());
             requestRepository.save(r);

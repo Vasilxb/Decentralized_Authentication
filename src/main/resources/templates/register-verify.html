@@ -1,18 +1,27 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
 <head>
     <meta charset="UTF-8"/>
-    <title>Потврди email</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Потврди email · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/>
 </head>
-<body>
-<h1>Потврди го твојот email</h1>
-<p>Испративме код на <strong th:text="${email}"></strong> (провери ја конзолата на серверот).</p>
-<p th:if="${error}" th:text="${error}" style="color:red"></p>
+<body class="auth-page">
+<main class="auth-shell">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <h1>Потврди го твојот email</h1>
+    <p class="subtitle">Испративме код на <strong th:text="${email}" style="color: var(--text);"></strong> — провери ја конзолата на серверот.</p>
 
-<form method="post" action="/register/verify">
-    <input type="hidden" name="email" th:value="${email}"/>
-    <input type="text" name="code" placeholder="6-цифрен код" maxlength="6" required/>
-    <button type="submit">Потврди</button>
-</form>
+    <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
+
+    <form method="post" action="/register/verify" class="stack">
+        <input type="hidden" name="email" th:value="${email}"/>
+        <label class="field">
+            <span class="field-label">6-цифрен код</span>
+            <input type="text" name="code" class="code-input" maxlength="6" placeholder="000000" required/>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Потврди</button>
+    </form>
+</main>
 </body>
 </html>
