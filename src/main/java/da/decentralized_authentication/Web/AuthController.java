@@ -83,11 +83,25 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String username, @RequestParam String password, Model model) {
+    public String login(@RequestParam String username, @RequestParam String password,
+                        Model model, HttpServletResponse response) {
         if (!authService.checkPassword(username, password)) {
             model.addAttribute("error", "Погрешни податоци или суспендирана сметка");
             return "login";
         }
+
+        if (!authService.requiresTwoFactor(username)) {
+            // DEMO BYPASS - директно сесија, без код
+            String token = authService.directLogin(username);
+            if (token != null) {
+                Cookie cookie = new Cookie("session", token);
+                cookie.setHttpOnly(true);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+                return "redirect:/home";
+            }
+        }
+
         authService.requestLoginCode(username);
         return "redirect:/login/verify?username=" + username;
     }

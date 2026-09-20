@@ -12,12 +12,15 @@ public interface AuthService {
                               String address, String email, String password);
     VerificationResult completeRegistration(String email, String code);
     boolean checkPassword(String username, String password);
+    boolean requiresTwoFactor(String username); // НОВО
     void requestLoginCode(String username);
+    String directLogin(String username); // НОВО - за bypass случаи
     String completeLogin(String username, String code);
     void revokeUser(String username);
     Optional<User> getUserByUsername(String username);
     Optional<User> getUserById(Long id);
     List<User> getAllUsers();
     void updateUser(User user);
+
     void enableUser(String username);
 }

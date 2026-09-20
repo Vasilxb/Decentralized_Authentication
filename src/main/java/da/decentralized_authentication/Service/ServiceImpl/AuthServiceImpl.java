@@ -11,12 +11,12 @@ import da.decentralized_authentication.Service.SessionService;
 import da.decentralized_authentication.Service.VerificationCodeService;
 import da.decentralized_authentication.Util.PasswordUtil;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -25,6 +25,10 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordUtil passwordUtil;
     private final VerificationCodeService verificationCodeService;
     private final SessionService sessionService;
+
+    @Value("${app.security.no-2fa-usernames:}")
+    private String noTwoFaUsernamesRaw;
+
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordUtil passwordUtil,
@@ -131,6 +135,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public boolean requiresTwoFactor(String username) {
+        Set<String> exempt = new HashSet<>(Arrays.asList(noTwoFaUsernamesRaw.split(",")));
+        return !exempt.contains(username.trim());
+    }
+
+    @Override
     public void requestLoginCode(String username) {
         userRepository.findByUsername(username)
                 .filter(User::isEnabled)
@@ -140,6 +150,14 @@ public class AuthServiceImpl implements AuthService {
                                 user.getEmail()
                         )
                 );
+    }
+
+    @Override
+    public String directLogin(String username) {
+        return userRepository.findByUsername(username)
+                .filter(User::isEnabled)
+                .map(user -> sessionService.createSession(user.getId()))
+                .orElse(null);
     }
 
     @Override

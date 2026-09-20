@@ -23,3 +23,6 @@ Caused by: org.h2.jdbc.JdbcSQLNonTransientConnectionException: The connection wa
 2026-09-17 14:12:42.577908+02:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]WHERE username = 'lalala'"; SQL statement:
 WHERE username = 'lalala' [42000-240]
+2026-09-17 23:36:07.072012+02:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM CREDENTIALS WHERE HOLDER_ID = [*]<lalala-ovo ID>"; expected "ALL (, ANY (, SOME ("; SQL statement:
+SELECT * FROM CREDENTIALS WHERE HOLDER_ID = <lalala-ovo ID> [42001-240]
