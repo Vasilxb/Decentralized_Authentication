@@ -33,6 +33,7 @@
             <tr th:each="r : ${requests}">
                 <td class="mono" th:text="${r.holderId}"></td>
                 <td th:text="${r.requestedType}"></td>
+                <td th:text="${r.description}"></td>
                 <td class="mono" th:text="${r.proofDocumentPath}"></td>
                 <td class="mono" th:text="${r.requestedAt}"></td>
                 <td>

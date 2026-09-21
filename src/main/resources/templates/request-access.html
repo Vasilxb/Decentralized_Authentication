@@ -41,12 +41,12 @@
                 <td class="mono" th:text="${r.requestedAt}"></td>
                 <td th:if="${r.status.name() == 'PENDING'}">
                     <div class="actions-row">
-                        <form method="post" action="/requestAccess/approve" style="display:inline" class="actions-row">
+                        <form method="post" action="/requestAccess/approve" style="display:inline">
                             <input type="hidden" name="requestId" th:value="${r.id}"/>
                             <select name="credentialId" required>
                                 <option th:each="c : ${credentials}"
                                         th:value="${c.id}"
-                                        th:text="${c.type} + ' (#' + ${c.id} + ')'"></option>
+                                        th:text="${c.type}"></option>
                             </select>
                             <button type="submit" class="btn btn-primary btn-small">Одобри</button>
                         </form>

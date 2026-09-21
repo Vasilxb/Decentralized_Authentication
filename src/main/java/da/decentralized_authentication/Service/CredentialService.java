@@ -4,6 +4,7 @@ import da.decentralized_authentication.Model.Credential;
 import da.decentralized_authentication.Model.CredentialRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CredentialService {
     CredentialRequest requestCredential(Long holderId, String type, String proofDocumentPath);
@@ -16,4 +17,6 @@ public interface CredentialService {
     void revokeAllForHolder(Long holderId, String reason); // НОВО
     void deleteCredential(Long credentialId);
     boolean verifyCredential(Long credentialId) throws Exception;
+    Optional<Credential> getCredentialById(Long credentialId);
+    CredentialRequest requestCredential(Long holderId, String type, String proofDocumentPath, String description);
 }

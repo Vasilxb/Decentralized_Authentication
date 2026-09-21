@@ -46,11 +46,12 @@ public class ProfileController {
     public String requestCredential(@CookieValue(value = "session", required = false) String token,
                                     @RequestParam String type,
                                     @RequestParam(required = false) String proofDocumentPath,
+                                    @RequestParam(required = false) String description,
                                     RedirectAttributes redirectAttributes) {
         Optional<User> user = currentUser(token);
         if (user.isEmpty()) return "redirect:/login";
 
-        credentialService.requestCredential(user.get().getId(), type, proofDocumentPath);
+        credentialService.requestCredential(user.get().getId(), type, proofDocumentPath, description);
         redirectAttributes.addFlashAttribute("successMessage", "Барањето е испратено за преглед");
         return "redirect:/profile";
     }

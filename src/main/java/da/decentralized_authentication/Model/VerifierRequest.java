@@ -1,4 +1,6 @@
 package da.decentralized_authentication.Model;
+
+
 import da.decentralized_authentication.Model.Enum.VerifierRequestStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,13 +25,14 @@ public class VerifierRequest {
 
     private String verifierName;
     private String requestedCredentialType;
+    private Long credentialId; // НОВО - се пополнува само при approve
 
     @Enumerated(EnumType.STRING)
     private VerifierRequestStatus status = VerifierRequestStatus.PENDING;
 
     private LocalDateTime requestedAt = LocalDateTime.now();
     private LocalDateTime respondedAt;
-    private Long credentialId;
+
     public VerifierRequest(Long holderId, String verifierName, String requestedCredentialType) {
         this.holderId = holderId;
         this.verifierName = verifierName;

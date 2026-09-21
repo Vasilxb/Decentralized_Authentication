@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VerifierServiceImpl implements VerifierService {
@@ -26,6 +27,11 @@ public class VerifierServiceImpl implements VerifierService {
     @Override
     public List<VerifierRequest> getRequestsForHolder(Long holderId) {
         return requestRepository.findByHolderId(holderId);
+    }
+
+    @Override
+    public Optional<VerifierRequest> getRequestById(Long requestId) {
+        return requestRepository.findById(requestId);
     }
 
     @Override

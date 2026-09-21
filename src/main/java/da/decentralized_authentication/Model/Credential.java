@@ -30,6 +30,9 @@ public class Credential {
     @Column(columnDefinition = "TEXT")
     private String holderPublicKeySnapshot;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Enumerated(EnumType.STRING)
     private CredentialStatus status = CredentialStatus.ACTIVE;
 
@@ -37,9 +40,10 @@ public class Credential {
     private LocalDateTime revokedAt;
     private String revokeReason;
 
-    public Credential(Long holderId, String type, String issuerSignature, String holderPublicKeySnapshot) {
+    public Credential(Long holderId, String type, String description, String issuerSignature, String holderPublicKeySnapshot) {
         this.holderId = holderId;
         this.type = type;
+        this.description = description;
         this.issuerSignature = issuerSignature;
         this.holderPublicKeySnapshot = holderPublicKeySnapshot;
     }

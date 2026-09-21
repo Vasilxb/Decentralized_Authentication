@@ -24,7 +24,8 @@ public class CredentialRequest {
 
     private String requestedType;
     private String proofDocumentPath;
-
+    @Column(columnDefinition = "TEXT")
+    private String description;
     @Enumerated(EnumType.STRING)
     private CredentialRequestStatus status = CredentialRequestStatus.PENDING;
 

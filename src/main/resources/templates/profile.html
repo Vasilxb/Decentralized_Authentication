@@ -29,12 +29,13 @@
     <section class="panel">
         <div class="panel-head"><h2>Твоите credentials</h2></div>
         <table class="ledger">
-            <tr><th>Тип</th><th>Статус</th><th>Издаден</th><th>Акции</th></tr>
+            <tr><th>Тип</th><th>Опис</th><th>Статус</th><th>Издаден</th><th>Акции</th></tr>
             <tr th:if="${#lists.isEmpty(credentials)}" class="empty-row">
                 <td colspan="4">Нема издадени credentials.</td>
             </tr>
             <tr th:each="c : ${credentials}">
                 <td th:text="${c.type}"></td>
+                <td th:text="${c.description}"></td>
                 <td><span class="pill" th:classappend="${c.status.name() == 'ACTIVE'} ? 'pill-active' : 'pill-revoked'" th:text="${c.status}"></span></td>
                 <td class="mono" th:text="${c.issuedAt}"></td>
                 <td>
@@ -58,6 +59,7 @@
         <div class="panel-head"><h2>Барај нов credential</h2></div>
         <form method="post" action="/profile/request-credential" class="stack">
             <input type="text" name="type" placeholder="Тип на credential" required/>
+            <textarea name="description" placeholder="Кратко опишување (на пр. 'Дипломиран информатичар, УКИМ, 2024')"></textarea>
             <input type="text" name="proofDocumentPath" placeholder="Патека до документ (опционално)"/>
             <button type="submit" class="btn btn-primary">Поднеси барање</button>
         </form>

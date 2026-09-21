@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CredentialServiceImpl implements CredentialService {
@@ -50,9 +51,6 @@ public class CredentialServiceImpl implements CredentialService {
     public void approveRequest(Long requestId, Long adminId) throws Exception {
         CredentialRequest req = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Барањето не постои"));
-        if (req.getStatus() != CredentialRequestStatus.PENDING) {
-            throw new IllegalStateException("Барањето веќе е обработено");
-        }
 
         DidDocument didDoc = didDocumentRepository.findByHolderId(req.getHolderId())
                 .orElseThrow(() -> new IllegalStateException(
@@ -64,10 +62,12 @@ public class CredentialServiceImpl implements CredentialService {
         requestRepository.save(req);
 
         String publicKeySnapshot = didDoc.getPublicKeyJwk();
-        String dataToSign = req.getHolderId() + "|" + req.getRequestedType() + "|" + publicKeySnapshot;
+        String description = req.getDescription() != null ? req.getDescription() : "";
+        String dataToSign = req.getHolderId() + "|" + req.getRequestedType() + "|" + description + "|" + publicKeySnapshot;
         String signature = issuerKeyService.sign(dataToSign);
+
         credentialRepository.save(new Credential(req.getHolderId(), req.getRequestedType(),
-                signature, publicKeySnapshot));
+                description, signature, publicKeySnapshot));
     }
 
     @Override
@@ -120,7 +120,21 @@ public class CredentialServiceImpl implements CredentialService {
         Credential c = credentialRepository.findById(credentialId)
                 .orElseThrow(() -> new IllegalArgumentException("Credential не постои"));
         if (c.getStatus() == CredentialStatus.REVOKED) return false;
-        String dataToVerify = c.getHolderId() + "|" + c.getType() + "|" + c.getHolderPublicKeySnapshot();
+
+        String description = c.getDescription() != null ? c.getDescription() : "";
+        String dataToVerify = c.getHolderId() + "|" + c.getType() + "|" + description + "|" + c.getHolderPublicKeySnapshot();
         return issuerKeyService.verify(dataToVerify, c.getIssuerSignature());
+    }
+
+    @Override
+    public Optional<Credential> getCredentialById(Long credentialId) {
+        return credentialRepository.findById(credentialId);
+    }
+
+    @Override
+    public CredentialRequest requestCredential(Long holderId, String type, String proofDocumentPath, String description) {
+        CredentialRequest req = new CredentialRequest(holderId, type, proofDocumentPath);
+        req.setDescription(description);
+        return requestRepository.save(req);
     }
 }
