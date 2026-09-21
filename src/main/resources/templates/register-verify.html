@@ -10,7 +10,7 @@
 <main class="auth-shell">
     <span class="brand-mark" aria-hidden="true"></span>
     <h1>Потврди го твојот email</h1>
-    <p class="subtitle">Испративме код на <strong th:text="${email}" style="color: var(--text);"></strong> — провери ја конзолата на серверот.</p>
+    <p class="subtitle">Испративме код на <strong th:text="${email}" style="color: var(--text);"></strong> — провери го твојот email (и spam папката).</p>
 
     <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
 
@@ -22,6 +22,7 @@
         </label>
         <button type="submit" class="btn btn-primary btn-block">Потврди</button>
     </form>
+    <p class="foot-note">Кодот важи 10 минути. По 3 погрешни обиди мора повторно да се регистрираш.</p>
 </main>
 </body>
 </html>

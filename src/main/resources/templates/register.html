@@ -13,36 +13,91 @@
     <p class="subtitle">Создади сметка за да добиеш свој дигитален идентитет.</p>
 
     <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
+    <p id="client-error" class="alert alert-error" style="display:none"></p>
 
-    <form method="post" action="/register" class="stack">
+    <form method="post" action="/register" class="stack" id="register-form" novalidate>
         <label class="field">
             <span class="field-label">Корисничко име</span>
-            <input type="text" name="username" placeholder="на пр. marija.k" required/>
+            <input type="text" name="username" th:value="${username}" placeholder="на пр. marija.k"
+                   maxlength="50" required/>
         </label>
         <label class="field">
             <span class="field-label">Целосно име</span>
-            <input type="text" name="fullName" placeholder="Марија Костова" required/>
+            <input type="text" name="fullName" th:value="${fullName}" placeholder="Марија Костова"
+                   maxlength="150" required/>
         </label>
         <label class="field">
             <span class="field-label">Датум на раѓање</span>
-            <input type="date" name="dob" required/>
+            <input type="date" name="dob" th:value="${dob}" required/>
         </label>
         <label class="field">
             <span class="field-label">Адреса на живеење</span>
-            <input type="text" name="address" placeholder="ул. Партизанска 12, Скопје" required/>
+            <input type="text" name="address" th:value="${address}" placeholder="ул. Партизанска 12, Скопје"
+                   maxlength="200" required/>
         </label>
         <label class="field">
-            <span class="field-label">Email</span>
-            <input type="email" name="email" placeholder="marija@example.com" required/>
+            <span class="field-label">Email (со мали букви)</span>
+            <input type="email" name="email" th:value="${email}" placeholder="marija@example.com"
+                   maxlength="254" required/>
         </label>
         <label class="field">
             <span class="field-label">Лозинка</span>
             <input type="password" name="password" placeholder="••••••••" required/>
+        </label>
+        <label class="field">
+            <span class="field-label">Потврди лозинка</span>
+            <input type="password" name="confirmPassword" placeholder="••••••••" required/>
         </label>
         <button type="submit" class="btn btn-primary btn-block">Регистрирај се</button>
     </form>
 
     <p class="foot-note">Веќе имаш сметка? <a href="/login">Најави се</a></p>
 </main>
+
+<script>
+    // Client-side validation is only for instant feedback. The server (AuthController)
+    // repeats every check, because a direct HTTP request bypasses this script.
+    (function () {
+        var form = document.getElementById('register-form');
+        var box = document.getElementById('client-error');
+        var UNSAFE = /[<>]/;
+        var CONTROL = /[\u0000-\u001f\u007f-\u009f]/;
+
+        function validate(f) {
+            var username = f.username.value.trim();
+            var fullName = f.fullName.value.trim();
+            var address = f.address.value.trim();
+            var email = f.email.value.trim();
+            var password = f.password.value;
+
+            if (!username || username.length > 50 || UNSAFE.test(username) || CONTROL.test(username))
+                return 'Корисничкото име е задолжително (макс. 50 знаци) и не смее да содржи < > или контролни знаци.';
+            if (!fullName || UNSAFE.test(fullName) || CONTROL.test(fullName))
+                return 'Целосното име е задолжително и не смее да содржи < > или контролни знаци.';
+            if (!address || UNSAFE.test(address) || CONTROL.test(address))
+                return 'Адресата е задолжителна и не смее да содржи < > или контролни знаци.';
+            if (!f.dob.value)
+                return 'Датумот на раѓање е задолжителен.';
+            if (email !== email.toLowerCase())
+                return 'Email адресата мора да биде со мали букви.';
+            if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,24}$/.test(email))
+                return 'Внеси важечка email адреса (на пр. korisnik@primer.com).';
+            if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password))
+                return 'Лозинката мора да има најмалку 8 знаци, со барем една мала буква, една голема буква, една бројка и еден специјален знак.';
+            if (password !== f.confirmPassword.value)
+                return 'Лозинките не се совпаѓаат.';
+            return null;
+        }
+
+        form.addEventListener('submit', function (e) {
+            var msg = validate(form);
+            if (msg) {
+                e.preventDefault();
+                box.textContent = msg;
+                box.style.display = 'block';
+            }
+        });
+    })();
+</script>
 </body>
 </html>
