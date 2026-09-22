@@ -1,118 +1,80 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
 <head>
-    <meta charset="UTF-8">
-    <title>Credential Verifier</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Credential Verifier · Decentralized Auth</title>
     <link rel="stylesheet" href="/css/style.css"/>
 </head>
-
 <body>
-
-<h1>Credential Verifier</h1>
-
-<h2>Request Credential</h2>
-
-<form th:action="@{/verify/request}" method="post">
-
-    <div>
-        <label>Holder Username:</label>
-        <input type="text"
-               name="holderUsername"
-               required>
-    </div>
-
-    <br>
-
-    <div>
-        <label>Verifier Name:</label>
-        <input type="text"
-               name="verifierName"
-               required>
-    </div>
-
-    <br>
-
-    <div>
-        <label>Credential Type:</label>
-        <input type="text"
-               name="credentialType"
-               required>
-    </div>
-
-    <br>
-
-    <button type="submit">
-        Request Credential
-    </button>
-
-</form>
-
-
-<hr>
-
-
-<div th:if="${success}">
-    <h3 th:text="${success}"></h3>
-</div>
-
-<div th:if="${error}">
-    <h3 th:text="${error}"></h3>
-</div>
-
-
-<div th:if="${requestId != null}">
-
-    <h2>Check Request</h2>
-
-    <p>
-        Request ID:
-        <strong th:text="${requestId}"></strong>
-    </p>
-
-    <a th:href="@{/verify/status/{id}(id=${requestId})}">
-        Check Status
+<header class="topbar">
+    <a class="brand" href="/home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Decentralized Auth</span>
     </a>
+</header>
 
-</div>
+<main class="page">
+    <h1>Credential Verifier</h1>
+    <p class="subtitle">Побарај и провери credential на некој holder.</p>
 
+    <p th:if="${success}" th:text="${success}" class="alert alert-success"></p>
+    <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
 
-<div th:if="${request != null}">
+    <section class="panel">
+        <div class="panel-head"><h2>Побарај Credential</h2></div>
+        <form th:action="@{/verify/request}" method="post" class="stack">
+            <label class="field">
+                <span class="field-label">Holder Username</span>
+                <input type="text" name="holderUsername" required/>
+            </label>
+            <label class="field">
+                <span class="field-label">Verifier Name</span>
+                <input type="text" name="verifierName" required/>
+            </label>
+            <label class="field">
+                <span class="field-label">Credential Type</span>
+                <input type="text" name="credentialType" required/>
+            </label>
+            <button type="submit" class="btn btn-primary">Побарај</button>
+        </form>
+    </section>
 
-    <hr>
+    <section class="panel" th:if="${requestId != null}">
+        <div class="panel-head"><h2>Провери барање</h2></div>
+        <p>Request ID: <strong class="mono" th:text="${requestId}"></strong></p>
+        <a th:href="@{/verify/status/{id}(id=${requestId})}" class="btn btn-secondary btn-small">
+            Провери статус
+        </a>
+    </section>
 
-    <h2>Verification Result</h2>
+    <section class="panel" th:if="${request != null}">
+        <div class="panel-head"><h2>Резултат од верификација</h2></div>
 
-    <p>
-        Status:
-        <strong th:text="${status}"></strong>
-    </p>
+        <div class="identity-card">
+            <div class="field-row">
+                <span class="field-label">Статус</span>
+                <span class="field-value">
+                    <span class="pill"
+                          th:classappend="${status == 'APPROVED'} ? 'pill-active' : (${status == 'DENIED'} ? 'pill-revoked' : 'pill-pending')"
+                          th:text="${status}"></span>
+                </span>
+            </div>
+            <div class="field-row" th:if="${credentialType != null}">
+                <span class="field-label">Тип</span>
+                <span class="field-value" th:text="${credentialType}"></span>
+            </div>
+            <div class="field-row" th:if="${description}">
+                <span class="field-label">Опис</span>
+                <span class="field-value" th:text="${description}"></span>
+            </div>
+        </div>
 
-    <p th:if="${credentialType != null}">
-        Credential Type:
-        <strong th:text="${credentialType}"></strong>
-    </p>
-
-    <p><strong>Тип:</strong> <span th:text="${credentialType}"></span></p>
-    <p th:if="${description}"><strong>Опис:</strong> <span th:text="${description}"></span></p>
-
-    <p th:if="${status == 'PENDING'}">
-        Waiting for holder approval...
-    </p>
-
-    <p th:if="${status == 'DENIED'}">
-        The holder denied the request.
-    </p>
-
-    <p th:if="${valid == true}">
-        Credential is valid.
-    </p>
-
-    <p th:if="${valid == false and status == 'APPROVED'}">
-        Credential is NOT valid.
-    </p>
-
-</div>
-
+        <p th:if="${status == 'PENDING'}">Се чека одобрување од holder...</p>
+        <p th:if="${status == 'DENIED'}">Holder-от го одби барањето.</p>
+        <p th:if="${valid == true}" class="alert alert-success">Credential-от е валиден.</p>
+        <p th:if="${valid == false and status == 'APPROVED'}" class="alert alert-error">Credential-от НЕ е валиден.</p>
+    </section>
+</main>
 </body>
 </html>

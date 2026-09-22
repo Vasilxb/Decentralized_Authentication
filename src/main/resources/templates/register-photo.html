@@ -1,17 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Прикачи фотографија · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/>
 </head>
-<body>
+<body class="auth-page">
+<main class="auth-shell">
+    <span class="brand-mark" aria-hidden="true"></span>
     <h1>Прикачи ID фотографија</h1>
-    <p th:if="${rejectionReason}" class="alert alert-error">Претходно одбиено: <span th:text="${rejectionReason}"></span></p>
+    <p class="subtitle">Потребна е важечка слика од твојот документ за идентификација.</p>
+
+    <p th:if="${rejectionReason}" class="alert alert-error">
+        Претходно одбиено: <span th:text="${rejectionReason}"></span>
+    </p>
     <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
-    <form method="post" action="/register/photo" enctype="multipart/form-data">
+
+    <form method="post" action="/register/photo" enctype="multipart/form-data" class="stack">
         <input type="hidden" name="email" th:value="${email}"/>
-        <input type="file" name="photo" accept="image/jpeg,image/png" required/>
-        <button type="submit" class="btn btn-primary">Прикачи</button>
+        <label class="field">
+            <span class="field-label">Фотографија (JPEG или PNG)</span>
+            <input type="file" name="photo" accept="image/jpeg,image/png" required/>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Прикачи</button>
     </form>
+</main>
 </body>
 </html>
