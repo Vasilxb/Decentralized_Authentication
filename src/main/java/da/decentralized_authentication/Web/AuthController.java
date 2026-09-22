@@ -1,6 +1,7 @@
 package da.decentralized_authentication.Web;
 
 import da.decentralized_authentication.Model.Enum.VerificationResult;
+import da.decentralized_authentication.Model.User;
 import da.decentralized_authentication.Service.AuthService;
 import da.decentralized_authentication.Service.SessionService;
 import jakarta.servlet.http.Cookie;
@@ -271,48 +272,17 @@ public class AuthController {
     }
 
     @PostMapping("/register/verify")
-    public String verifyRegister(@RequestParam String email,
-                                 @RequestParam String code,
-                                 Model model) {
-
-        String cleanEmail = email.trim();
-        String cleanCode = code.trim();
-
-        VerificationResult result =
-                authService.completeRegistration(cleanEmail, cleanCode);
-
+    public String verifyRegister(@RequestParam String email, @RequestParam String code, Model model) {
+        VerificationResult result = authService.completeRegistration(email, code);
         return switch (result) {
-            case SUCCESS -> "redirect:/login";
-            case EXPIRED ->
-                    withError(
-                            model,
-                            cleanEmail,
-                            "Кодот истече, регистрирај се повторно"
-                    );
-            case LOCKED ->
-                    withError(
-                            model,
-                            cleanEmail,
-                            "Премногу неуспешни обиди, регистрирај се повторно"
-                    );
-            case USERNAME_TAKEN ->
-                    withError(
-                            model,
-                            cleanEmail,
-                            "Корисничкото име веќе постои"
-                    );
-            case EMAIL_TAKEN ->
-                    withError(
-                            model,
-                            cleanEmail,
-                            "Email адресата веќе постои"
-                    );
-            default ->
-                    withError(
-                            model,
-                            cleanEmail,
-                            "Погрешен или непостоечки код"
-                    );
+            case SUCCESS -> {
+                User user = authService.getUserByUsername(/* треба username, не email */ email).orElse(null);
+                // подобро: authService.completeRegistration да враќа username или User директно
+                yield "redirect:/register/photo?email=" + email;
+            }
+            case EXPIRED -> withError(model, email, "Кодот истечен, регистрирај се повторно");
+            case LOCKED -> withError(model, email, "Премногу обиди, регистрирај се повторно");
+            default -> withError(model, email, "Погрешен код");
         };
     }
 

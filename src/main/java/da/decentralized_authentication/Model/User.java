@@ -1,5 +1,6 @@
 package da.decentralized_authentication.Model;
 
+import da.decentralized_authentication.Model.Enum.AccountStatus;
 import da.decentralized_authentication.Model.Enum.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -49,6 +50,15 @@ public class User {
     private String publicKey; // holder-ов public key, испратен клиентски
 
     private String did;
+
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "varchar(20) default 'ACTIVE'")
+    private AccountStatus accountStatus = AccountStatus.PENDING_PHOTO;
+
+    private String idPhotoPath;
+    @Column(nullable = false)
+    private int idPhotoRejectionCount = 0;
+    private String lastRejectionReason;
 
     public User(String username, String fullName, LocalDate dateOfBirth, String address,
                 String email, String passwordHash, String salt) {

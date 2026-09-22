@@ -1,5 +1,6 @@
 package da.decentralized_authentication.Service.ServiceImpl;
 
+import da.decentralized_authentication.Model.Enum.AccountStatus;
 import da.decentralized_authentication.Model.Enum.UserRole;
 import da.decentralized_authentication.Model.Enum.VerificationResult;
 import da.decentralized_authentication.Model.Enum.VerificationType;
@@ -9,11 +10,13 @@ import da.decentralized_authentication.Repository.UserRepository;
 import da.decentralized_authentication.Service.AuthService;
 import da.decentralized_authentication.Service.SessionService;
 import da.decentralized_authentication.Service.VerificationCodeService;
+import da.decentralized_authentication.Util.IdPhotoStorageService;
 import da.decentralized_authentication.Util.PasswordUtil;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -25,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordUtil passwordUtil;
     private final VerificationCodeService verificationCodeService;
     private final SessionService sessionService;
-
+    private final IdPhotoStorageService photoStorageService;
     @Value("${app.security.no-2fa-usernames:}")
     private String noTwoFaUsernamesRaw;
 
@@ -33,11 +36,12 @@ public class AuthServiceImpl implements AuthService {
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordUtil passwordUtil,
                            VerificationCodeService verificationCodeService,
-                           SessionService sessionService) {
+                           SessionService sessionService, IdPhotoStorageService photoStorageService) {
         this.userRepository = userRepository;
         this.passwordUtil = passwordUtil;
         this.verificationCodeService = verificationCodeService;
         this.sessionService = sessionService;
+        this.photoStorageService = photoStorageService;
     }
 
     @PostConstruct
@@ -46,8 +50,9 @@ public class AuthServiceImpl implements AuthService {
         String salt = passwordUtil.generateSalt();
         String hash = passwordUtil.hash("admin123", salt);
         User admin = new User("admin", "Default Admin", LocalDate.of(1990, 1, 1),
-                "N/A", "admin@example.com", hash, salt);
+                "N/A", "твојата-реална-адреса@gmail.com", hash, salt);
         admin.setRole(UserRole.ADMIN);
+        admin.setAccountStatus(AccountStatus.ACTIVE); // НОВО - admin прескокнува ID photo
         userRepository.save(admin);
         System.out.println("Default admin created: username=admin, password=admin123");
     }
@@ -199,6 +204,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -214,5 +224,44 @@ public class AuthServiceImpl implements AuthService {
             u.setEnabled(true);
             userRepository.save(u);
         });
+    }
+    @Override
+    public void uploadIdPhoto(Long userId, MultipartFile file) throws Exception {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Корисникот не постои"));
+
+        String path = photoStorageService.store(file);
+        user.setIdPhotoPath(path);
+        user.setAccountStatus(AccountStatus.PENDING_REVIEW);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void approveIdPhoto(Long userId) {
+        userRepository.findById(userId).ifPresent(u -> {
+            u.setAccountStatus(AccountStatus.ACTIVE);
+            userRepository.save(u);
+        });
+    }
+
+    @Override
+    public void rejectIdPhoto(Long userId, String reason) {
+        userRepository.findById(userId).ifPresent(u -> {
+            u.setIdPhotoRejectionCount(u.getIdPhotoRejectionCount() + 1);
+            u.setLastRejectionReason(reason);
+            if (u.getIdPhotoRejectionCount() >= 3) {
+                u.setAccountStatus(AccountStatus.REJECTED);
+            } else {
+                u.setAccountStatus(AccountStatus.PENDING_PHOTO); // дозволи повторен обид
+            }
+            userRepository.save(u);
+        });
+    }
+
+    @Override
+    public List<User> getPendingReviewUsers() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getAccountStatus() == AccountStatus.PENDING_REVIEW)
+                .toList();
     }
 }

@@ -2,6 +2,7 @@ package da.decentralized_authentication.Service;
 
 import da.decentralized_authentication.Model.User;
 import da.decentralized_authentication.Model.Enum.VerificationResult;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,8 +20,13 @@ public interface AuthService {
     void revokeUser(String username);
     Optional<User> getUserByUsername(String username);
     Optional<User> getUserById(Long id);
+    Optional<User> getUserByEmail(String email);
     List<User> getAllUsers();
     void updateUser(User user);
 
     void enableUser(String username);
+    void uploadIdPhoto(Long userId, MultipartFile file) throws Exception;
+    void approveIdPhoto(Long userId);
+    void rejectIdPhoto(Long userId, String reason);
+    List<User> getPendingReviewUsers();
 }

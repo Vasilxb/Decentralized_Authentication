@@ -5,6 +5,8 @@ import da.decentralized_authentication.Service.CredentialService;
 import da.decentralized_authentication.Service.SessionService;
 import da.decentralized_authentication.Model.User;
 import da.decentralized_authentication.Model.Enum.UserRole;
+import da.decentralized_authentication.Util.IdPhotoStorageService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +20,13 @@ public class AdminController {
     private final AuthService authService;
     private final CredentialService credentialService;
     private final SessionService sessionService;
-
+    private final IdPhotoStorageService photoStorageService;
     public AdminController(AuthService authService, CredentialService credentialService,
-                           SessionService sessionService) {
+                           SessionService sessionService, IdPhotoStorageService photoStorageService) {
         this.authService = authService;
         this.credentialService = credentialService;
         this.sessionService = sessionService;
+        this.photoStorageService = photoStorageService;
     }
 
     private Optional<User> currentAdmin(String token) {
@@ -101,5 +104,42 @@ public class AdminController {
         authService.enableUser(username);
         redirectAttributes.addFlashAttribute("successMessage", "Сметката на " + username + " е активирана");
         return "redirect:/admin/users";
+    }
+
+    @GetMapping("/admin/activations")
+    public String pendingActivations(@CookieValue(value = "session", required = false) String token, Model model) {
+        if (currentAdmin(token).isEmpty()) return "redirect:/login";
+        model.addAttribute("users", authService.getPendingReviewUsers());
+        return "admin-activations";
+    }
+
+    @GetMapping("/admin/activations/photo/{userId}")
+    @ResponseBody
+    public ResponseEntity<byte[]> viewPhoto(@CookieValue(value = "session", required = false) String token,
+                                            @PathVariable Long userId) throws Exception {
+        if (currentAdmin(token).isEmpty()) return ResponseEntity.status(401).build();
+
+        User user = authService.getUserById(userId).orElseThrow();
+        byte[] imageBytes = photoStorageService.read(user.getIdPhotoPath());
+        return ResponseEntity.ok().header("Content-Type", "image/jpeg").body(imageBytes);
+    }
+
+    @PostMapping("/admin/activations/approve")
+    public String approveActivation(@CookieValue(value = "session", required = false) String token,
+                                    @RequestParam Long userId, RedirectAttributes redirectAttributes) {
+        if (currentAdmin(token).isEmpty()) return "redirect:/login";
+        authService.approveIdPhoto(userId);
+        redirectAttributes.addFlashAttribute("successMessage", "Сметката е активирана");
+        return "redirect:/admin/activations";
+    }
+
+    @PostMapping("/admin/activations/reject")
+    public String rejectActivation(@CookieValue(value = "session", required = false) String token,
+                                   @RequestParam Long userId, @RequestParam String reason,
+                                   RedirectAttributes redirectAttributes) {
+        if (currentAdmin(token).isEmpty()) return "redirect:/login";
+        authService.rejectIdPhoto(userId, reason);
+        redirectAttributes.addFlashAttribute("successMessage", "Барањето е одбиено");
+        return "redirect:/admin/activations";
     }
 }

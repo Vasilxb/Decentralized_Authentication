@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="mk">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Активации · Decentralized Auth</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Decentralized Auth</span>
+    </a>
+    <nav class="topnav">
+        <a href="/admin/requests">Credential барања</a>
+        <a href="/admin/users">Корисници</a>
+        <a href="/logout" class="topnav-logout">Одјави се</a>
+    </nav>
+</header>
+
+<main class="page">
+    <h1>Активации на сметки</h1>
+    <p class="subtitle">Прегледај ID фотографии и одобри или одбиј нови регистрации.</p>
+
+    <p th:if="${successMessage}" th:text="${successMessage}" class="alert alert-success"></p>
+    <p th:if="${errorMessage}" th:text="${errorMessage}" class="alert alert-error"></p>
+
+    <section class="panel">
+        <div th:if="${#lists.isEmpty(users)}" class="empty-row">
+            <p>Нема сметки што чекаат активација.</p>
+        </div>
+
+        <div th:each="u : ${users}" class="panel" style="margin-bottom: 20px;">
+            <div class="panel-head">
+                <h2 th:text="${u.username}"></h2>
+                <span class="pill pill-pending">PENDING_REVIEW</span>
+            </div>
+
+            <div class="activation-grid" style="display: flex; gap: 24px; align-items: flex-start;">
+                <div class="photo-frame" style="flex-shrink: 0;">
+                    <img th:src="@{/admin/activations/photo/{id}(id=${u.id})}"
+                         alt="ID фотографија"
+                         style="max-width: 280px; max-height: 200px; border-radius: 8px; object-fit: cover;"/>
+                </div>
+
+                <div style="flex-grow: 1;">
+                    <table class="ledger">
+                        <tr><td><strong>Целосно име</strong></td><td th:text="${u.fullName}"></td></tr>
+                        <tr><td><strong>Датум на раѓање</strong></td><td th:text="${u.dateOfBirth}"></td></tr>
+                        <tr><td><strong>Адреса</strong></td><td th:text="${u.address}"></td></tr>
+                        <tr><td><strong>Email</strong></td><td th:text="${u.email}"></td></tr>
+                        <tr th:if="${u.idPhotoRejectionCount > 0}">
+                            <td><strong>Претходни одбивања</strong></td>
+                            <td th:text="${u.idPhotoRejectionCount} + ' / 3'"></td>
+                        </tr>
+                    </table>
+
+                    <div class="actions-row" style="margin-top: 16px;">
+                        <form method="post" action="/admin/activations/approve" style="display:inline">
+                            <input type="hidden" name="userId" th:value="${u.id}"/>
+                            <button type="submit" class="btn btn-primary btn-small">Активирај</button>
+                        </form>
+
+                        <form method="post" action="/admin/activations/reject" style="display:inline" class="actions-row">
+                            <input type="hidden" name="userId" th:value="${u.id}"/>
+                            <input type="text" name="reason" placeholder="Причина за одбивање" required size="24"/>
+                            <button type="submit" class="btn btn-danger btn-small">Одбиј</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>
